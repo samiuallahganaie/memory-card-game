@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Breathe Match, a respiratory system memory card game built by Samiuallah with HTML, CSS and JavaScript.">
+<title>Breathe Match | Respiratory System Memory Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef8ff; --ink:#0c3351; --muted:#4f6f88; --line:#c7e2f5;
+  --sky:#0ea5e9; --sky-dark:#0369a1; --coral:#fb7185; --coral-dark:#e11d48; --mint:#10b981; --sun:#f59e0b;
+  --card:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:Nunito,system-ui,Arial,sans-serif;color:var(--ink);line-height:1.55;min-height:100vh;display:flex;flex-direction:column;
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(circle at 12% 8%,rgba(14,165,233,.18) 0,transparent 38%),
+    radial-gradient(circle at 92% 2%,rgba(251,113,133,.2) 0,transparent 36%),
+    radial-gradient(rgba(14,165,233,.12) 1.5px,transparent 1.5px);
+  background-size:auto,auto,26px 26px;
+}
+h1,h2,.logo{font-family:Poppins,Nunito,Arial,sans-serif}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px;border-radius:12px}
+.container{width:min(820px,94%);margin:auto}
+header .bar{min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:22px;font-weight:800;color:var(--sky-dark)}
+.logo span{color:var(--coral-dark)}
+.home{color:var(--sky-dark);text-decoration:none;font-weight:700;padding:7px 16px;border:2px solid var(--line);border-radius:999px;background:#fff;transition:border-color .2s}
+.home:hover{border-color:var(--sky)}
+main{flex:1;padding:6px 0 36px}
+h1{text-align:center;font-size:clamp(26px,5.5vw,40px);font-weight:800;line-height:1.2;margin-bottom:6px}
+h1 em{font-style:normal;color:var(--coral-dark)}
+.sub{text-align:center;color:var(--muted);margin:0 auto 18px;max-width:560px;font-weight:600}
+
+.panel{background:rgba(255,255,255,.85);border:2px solid var(--line);border-radius:22px;padding:clamp(12px,3vw,22px);box-shadow:0 14px 40px rgba(12,51,81,.12)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.levels{display:flex;gap:8px;flex-wrap:wrap}
+.level{padding:7px 16px;border:2px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-weight:700;transition:border-color .2s}
+.level:hover{border-color:var(--sky)}
+.level[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:#fff}
+.btn{padding:9px 22px;border:0;border-radius:999px;background:linear-gradient(135deg,var(--coral),var(--coral-dark));color:#fff;font-weight:800;cursor:pointer;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn.ghost{background:#fff;color:var(--sky-dark);border:2px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.stat{background:#fff;border:2px solid var(--line);border-radius:14px;padding:6px 10px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.stat b{font-family:Poppins,sans-serif;font-size:19px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;font-weight:700;color:var(--muted);margin-bottom:12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+.fact{min-height:3.1em;margin-bottom:12px;padding:9px 14px;background:#ecfdf5;border:2px solid #a7f3d0;border-radius:14px;color:#065f46;font-weight:700;font-size:15px}
+.fact.idle{background:#f8fbfe;border-color:var(--line);color:var(--muted);font-weight:600}
+
+.board{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:clamp(7px,1.6vw,12px)}
+.card{display:block;width:100%;aspect-ratio:1/1;perspective:800px;background:none;border:0;cursor:pointer;padding:0}
+.inner{display:block;position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s}
+.card.flipped .inner,.card.matched .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.face.cover{background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.4),transparent 55%),linear-gradient(135deg,var(--sky),#38bdf8 55%,#7dd3fc);border:3px solid #fff;box-shadow:0 4px 12px rgba(3,105,161,.25);font-size:clamp(22px,6vw,36px)}
+.face.show{transform:rotateY(180deg);border:3px solid;font-weight:800}
+.face.show .kind{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;opacity:.75;margin-bottom:3px}
+.face.show.term{background:#e0f2fe;border-color:var(--sky);color:var(--sky-dark)}
+.face.show.term .txt{font-family:Poppins,sans-serif;font-size:clamp(11.5px,3.1vw,19px);line-height:1.2;overflow-wrap:anywhere}
+.face.show.def{background:#ffe4e6;border-color:var(--coral);color:#9f1239}
+.face.show.def .txt{font-size:clamp(10.5px,2.5vw,14px);line-height:1.25;overflow-wrap:anywhere}
+.board.dense .face.show.term .txt{font-size:13px}
+.board.dense .face.show.def .txt{font-size:11.5px;line-height:1.2}
+.board.dense .face.show .kind{font-size:8.5px}
+.card.matched .face.show{background:#d1fae5;border-color:var(--mint);color:#065f46;animation:pop .4s}
+@keyframes pop{50%{transform:rotateY(180deg) scale(1.07)}}
+.card:disabled{cursor:default}
+
+.overlay{position:fixed;inset:0;background:rgba(12,51,81,.7);display:none;place-items:center;padding:20px;z-index:20}
+.overlay.show{display:grid}
+.dialog{background:#fff;border-radius:26px;padding:30px 26px;max-width:410px;width:100%;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35)}
+.dialog h2{font-size:28px;margin-bottom:2px}
+.stars{font-size:36px;letter-spacing:6px;margin:6px 0;color:var(--sun)}
+.dialog p{color:var(--muted);font-weight:600}
+.dialog .rec{color:var(--coral-dark);font-weight:800;min-height:1.6em}
+.dialog .actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+footer{text-align:center;padding:18px 0;color:var(--muted);font-size:14px;font-weight:600}
+@media (max-width:560px){
+  .face.show .kind{font-size:8px}
+}
+@media (prefers-reduced-motion:reduce){.inner{transition:none}.card.matched .face.show{animation:none}.btn{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="container bar">
+    <span class="logo">Breathe<span>Match</span></span>
+    <a class="home" href="https://samiuallahganaie.github.io/CodeNest/">Back to portfolio</a>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <h1>Respiratory System <em>Memory Match</em></h1>
+    <p class="sub">Flip two cards to match each part of the respiratory system with what it does.</p>
+
+    <div class="panel">
+      <div class="controls">
+        <div class="levels" role="group" aria-label="Difficulty">
+          <button class="level" type="button" data-level="easy" aria-pressed="true">Easy</button>
+          <button class="level" type="button" data-level="medium" aria-pressed="false">Medium</button>
+          <button class="level" type="button" data-level="hard" aria-pressed="false">Hard</button>
+        </div>
+        <button class="btn" type="button" id="restart">Restart</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><small>Moves</small><b id="moves">0</b></div>
+        <div class="stat"><small>Time</small><b id="time">0:00</b></div>
+        <div class="stat"><small>Best</small><b id="best">-</b></div>
+      </div>
+
+      <div class="legend" aria-hidden="true">
+        <span><i style="background:#0ea5e9"></i>Blue = body part</span>
+        <span><i style="background:#fb7185"></i>Pink = what it does</span>
+      </div>
+
+      <p class="fact idle" id="fact" role="status" aria-live="polite">Find a blue card and the pink card that describes it.</p>
+
+      <div class="board" id="board"></div>
+    </div>
+  </div>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="win-title">
+  <div class="dialog">
+    <h2 id="win-title">Great breathing!</h2>
+    <div class="stars" id="stars" aria-hidden="true"></div>
+    <p id="win-text"></p>
+    <p class="rec" id="win-rec"></p>
+    <div class="actions">
+      <button class="btn" type="button" id="again">Play again</button>
+      <button class="btn ghost" type="button" id="close">Close</button>
+    </div>
+  </div>
+</div>
+
+<footer>Breathe Match | A project by Samiuallah | Built with HTML, CSS &amp; JavaScript</footer>
+
+<script>
+  const PAIRS = [
+    ["Alveoli", "Tiny air sacs where oxygen and carbon dioxide are exchanged"],
+    ["Trachea", "Windpipe: carries air from the throat to the lungs"],
+    ["Diaphragm", "Main muscle that drives breathing"],
+    ["Bronchi", "Two main tubes that branch into each lung"],
+    ["Larynx", "Voice box that holds the vocal cords"],
+    ["Epiglottis", "Flap that covers the windpipe when you swallow"],
+    ["Pharynx", "Throat: passage for both air and food"],
+    ["Bronchioles", "Smaller airways that branch from the bronchi"],
+    ["Pleura", "Thin membranes that surround the lungs"],
+    ["Hemoglobin", "Protein in red blood cells that carries oxygen"],
+    ["Nasal cavity", "Warms, moistens and filters the air you breathe in"],
+    ["Cilia", "Tiny hairs that sweep mucus and dust out of the airways"]
+  ];
+  const LEVELS = { easy: { pairs: 6, cols: 4 }, medium: { pairs: 9, cols: 6 }, hard: { pairs: 12, cols: 6 } };
+
+  const board = document.getElementById("board");
+  const movesEl = document.getElementById("moves");
+  const timeEl = document.getElementById("time");
+  const bestEl = document.getElementById("best");
+  const factEl = document.getElementById("fact");
+  const overlay = document.getElementById("overlay");
+
+  let level = "easy", first = null, second = null, lock = false;
+  let moves = 0, matched = 0, seconds = 0, timerId = null, started = false;
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  const fmt = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+
+  function getBest(l) { try { return JSON.parse(localStorage.getItem("breathematch-best-" + l)); } catch (e) { return null; } }
+  function setBest(l, v) { try { localStorage.setItem("breathematch-best-" + l, JSON.stringify(v)); } catch (e) {} }
+  function showBest() {
+    const b = getBest(level);
+    bestEl.textContent = b ? b.moves + " | " + fmt(b.time) : "-";
+  }
+  function say(text, idle) {
+    factEl.textContent = text;
+    factEl.className = "fact" + (idle ? " idle" : "");
+  }
+  function stopTimer() { clearInterval(timerId); timerId = null; }
+
+  function mk(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function newGame() {
+    stopTimer();
+    first = second = null; lock = false; moves = 0; matched = 0; seconds = 0; started = false;
+    movesEl.textContent = "0"; timeEl.textContent = "0:00";
+    overlay.classList.remove("show");
+    say("Find a blue card and the pink card that describes it.", true);
+    showBest();
+
+    const cfg = LEVELS[level];
+    const cols = window.innerWidth < 560 ? 3 : cfg.cols;
+    const chosen = shuffle(PAIRS.map((p, id) => ({ id, term: p[0], def: p[1] }))).slice(0, cfg.pairs);
+    const deck = [];
+    chosen.forEach(p => {
+      deck.push({ id: p.id, kind: "term", label: "Body part", text: p.term });
+      deck.push({ id: p.id, kind: "def", label: "What it does", text: p.def });
+    });
+
+    board.style.setProperty("--cols", cols);
+    board.classList.toggle("dense", cols === 6);
+    board.replaceChildren();
+    shuffle(deck).forEach((c, i) => {
+      const card = mk("button", "card");
+      card.type = "button";
+      card.dataset.pair = c.id;
+      card.dataset.kind = c.kind;
+      card.setAttribute("aria-label", "Card " + (i + 1) + ", face down");
+
+      const inner = mk("span", "inner");
+      inner.append(mk("span", "face cover", "\uD83C\uDF2C\uFE0F"));
+      const show = mk("span", "face show " + c.kind);
+      show.append(mk("span", "kind", c.label), mk("span", "txt", c.text));
+      inner.append(show);
+      card.append(inner);
+
+      card.addEventListener("click", () => flip(card, i, c));
+      board.append(card);
+    });
+  }
+
+  function flip(card, i, data) {
+    if (lock || card.classList.contains("flipped") || card.classList.contains("matched")) return;
+
+    if (!started) {
+      started = true;
+      timerId = setInterval(() => { seconds++; timeEl.textContent = fmt(seconds); }, 1000);
+    }
+    card.classList.add("flipped");
+    card.setAttribute("aria-label", "Card " + (i + 1) + ", " + data.label + ": " + data.text);
+    card._data = data;
+
+    if (!first) { first = card; return; }
+
+    second = card;
+    moves++;
+    movesEl.textContent = moves;
+
+    if (first.dataset.pair === second.dataset.pair) {
+      const term = [first, second].find(c => c.dataset.kind === "term")._data.text;
+      const def = [first, second].find(c => c.dataset.kind === "def")._data.text;
+      [first, second].forEach(c => { c.classList.add("matched"); c.disabled = true; });
+      say("Match! " + term + ": " + def + ".", false);
+      first = second = null;
+      matched++;
+      if (matched === LEVELS[level].pairs) setTimeout(win, 900);
+    } else {
+      lock = true;
+      say("Not a match. Try again.", true);
+      setTimeout(() => {
+        [first, second].forEach(c => {
+          c.classList.remove("flipped");
+          c.setAttribute("aria-label", "Card, face down");
+        });
+        first = second = null;
+        lock = false;
+      }, 1000);
+    }
+  }
+
+  function win() {
+    stopTimer();
+    const pairs = LEVELS[level].pairs;
+    const stars = moves <= pairs * 1.6 ? 3 : moves <= pairs * 2.4 ? 2 : 1;
+    document.getElementById("stars").textContent = "\u2605".repeat(stars) + "\u2606".repeat(3 - stars);
+    document.getElementById("win-text").textContent = "You matched all " + pairs + " pairs in " + moves + " moves and " + fmt(seconds) + ".";
+
+    const prev = getBest(level);
+    const better = !prev || moves < prev.moves || (moves === prev.moves && seconds < prev.time);
+    if (better) setBest(level, { moves, time: seconds });
+    document.getElementById("win-rec").textContent = better ? "New best score!" : "";
+    showBest();
+
+    overlay.classList.add("show");
+    document.getElementById("again").focus();
+  }
+
+  document.querySelectorAll(".level").forEach(b => b.addEventListener("click", () => {
+    level = b.dataset.level;
+    document.querySelectorAll(".level").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    newGame();
+  }));
+  document.getElementById("restart").addEventListener("click", newGame);
+  document.getElementById("again").addEventListener("click", newGame);
+  document.getElementById("close").addEventListener("click", () => overlay.classList.remove("show"));
+  document.addEventListener("keydown", e => { if (e.key === "Escape") overlay.classList.remove("show"); });
+
+  newGame();
+</script>
+</body>
+</html>
